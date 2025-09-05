@@ -87,16 +87,16 @@ mod tests {
         fs::copy("fixtures/input.png", temp_path.join("input.png")).unwrap();
         fs::copy("fixtures/input2.png", temp_path.join("input2.png")).unwrap();
         fs::copy("fixtures/input3.png", temp_path.join("input3.png")).unwrap();
-        let patterns = vec![format!("{}/*.png", temp_path.display())];
+        fs::copy("fixtures/input.jpg", temp_path.join("input4.jpg")).unwrap();
+        fs::copy("fixtures/input.tiff", temp_path.join("input5.tiff")).unwrap();
+        let patterns = vec![format!("{}/*", temp_path.display())];
         let result = Stitch::new(&patterns);
         assert!(result.is_ok());
         let stitch = result.unwrap();
-        assert_eq!(stitch.inputs.len(), 3);
+        assert_eq!(stitch.inputs.len(), 5);
         for input in stitch.inputs.iter() {
             assert!(input.path.exists());
             assert!(input.path.is_file());
-            assert_eq!(input.format, Format::Png);
-            assert_eq!(input.extension, "png");
         }
         let output_path = temp_path.join("output.mp4");
         let result = stitch.create(&output_path);
