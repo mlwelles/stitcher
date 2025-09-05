@@ -1,0 +1,12 @@
+[package]
+name = "stitcher"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.0", features = ["derive"] }
+glob = "0.3"
+infer = "0.15"
+
+[dev-dependencies]
+tempfile = "3.0"
