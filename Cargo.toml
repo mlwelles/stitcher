@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
+ffmpeg-sidecar = "2.0"
 glob = "0.3"
 infer = "0.15"
 

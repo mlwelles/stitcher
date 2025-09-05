@@ -8,7 +8,22 @@ into playable videos.
 - Process multiple image files using glob patterns
 - Support for JPEG, PNG, and TIFF formats
 - Automatic file type detection and validation
-- Sorted output by filename within each pattern group
+- Sorted input by filename within each pattern group
+- Outputs movie stitched from matching input files;
+
+## Dependencies
+Dependencies
+
+- [ffmpeg](https://ffmpeg.org/)
+
+### Dependency Installation
+On macOS:
+
+`brew install ffmpeg`
+
+On Debian-based systems:
+
+`apt install -y ffmpeg`
 
 ## Usage
 

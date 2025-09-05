@@ -3,13 +3,13 @@ use std::fs;
 use crate::stitcher::format::Format;
 
 #[derive(Debug)]
-pub struct Source {
+pub struct Input {
     pub path: PathBuf,
     pub extension: String,
     pub format: Format,
 }
 
-impl Source {
+impl Input {
     pub fn new(path: PathBuf) -> Result<Self, Box<dyn std::error::Error>> {
         if !path.exists() {
             return Err(format!("Path does not exist: {}", path.display()).into());
@@ -30,7 +30,7 @@ impl Source {
         
         let format = Format::from_mime_type(mime_type)?;
         
-        Ok(Source {
+        Ok(Input {
             path,
             extension,
             format,

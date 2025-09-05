@@ -1,9 +1,11 @@
-use crate::stitcher::source::Source;
+use std::path::PathBuf;
+use crate::stitcher::input::Input;
 use glob::glob;
+use crate::stitcher::Output;
 
 #[derive(Debug)]
 pub struct Stitch {
-    pub inputs: Vec<Source>,
+    pub inputs: Vec<Input>,
 }
 
 impl Stitch {
@@ -11,7 +13,7 @@ impl Stitch {
         let mut sources = Vec::new();
         
         for pattern in patterns {
-            match Self::find_matching_sources(pattern) {
+            match Self::find_matching_inputs(pattern) {
                 Ok(mut inputs) => {
                     sources.append(&mut inputs);
                 }
@@ -30,15 +32,19 @@ impl Stitch {
             inputs: sources,
         })
     }
+
+    pub fn create(&self, path: &PathBuf) -> Result<Output, Box<dyn std::error::Error>> {
+        Output::new(&self.inputs, path.clone())
+    }
     
-    fn find_matching_sources(glob_pattern: &str) -> Result<Vec<Source>, Box<dyn std::error::Error>> {
+    fn find_matching_inputs(glob_pattern: &str) -> Result<Vec<Input>, Box<dyn std::error::Error>> {
         let mut sources = Vec::new();
         
         for entry in glob(glob_pattern)? {
             match entry {
                 Ok(path) => {
                     if path.is_file() {
-                        match Source::new(path.to_path_buf()) {
+                        match Input::new(path.to_path_buf()) {
                             Ok(source) => sources.push(source),
                             Err(e) => return Err(e),
                         }
@@ -51,14 +57,14 @@ impl Stitch {
         sources.sort_by(|a, b| a.path.cmp(&b.path));
         Ok(sources)
     }
+
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::stitcher::format::Format;
-    use std::fs::{self, File};
-    use std::io::Write;
+    use std::fs;
     use tempfile::TempDir;
 
     fn setup_test_files() -> TempDir {
@@ -72,8 +78,37 @@ mod tests {
         // Create a subdirectory with files
         fs::create_dir(temp_path.join("subdir")).unwrap();
         fs::copy("fixtures/input.tiff", temp_path.join("subdir").join("nested.tiff")).unwrap();
-        
         temp_dir
+    }
+    #[test]
+    fn test_stitch_create() {
+        let temp_dir = TempDir::new().unwrap();
+        let temp_path = temp_dir.path();
+        fs::copy("fixtures/input.png", temp_path.join("input.png")).unwrap();
+        fs::copy("fixtures/input2.png", temp_path.join("input2.png")).unwrap();
+        fs::copy("fixtures/input3.png", temp_path.join("input3.png")).unwrap();
+        let patterns = vec![format!("{}/*.png", temp_path.display())];
+        let result = Stitch::new(&patterns);
+        assert!(result.is_ok());
+        let stitch = result.unwrap();
+        assert_eq!(stitch.inputs.len(), 3);
+        for input in stitch.inputs.iter() {
+            assert!(input.path.exists());
+            assert!(input.path.is_file());
+            assert_eq!(input.format, Format::Png);
+            assert_eq!(input.extension, "png");
+        }
+        let output_path = temp_path.join("output.mp4");
+        let result = stitch.create(&output_path);
+        assert!(result.is_ok(), "{}", result.unwrap_err().to_string());
+        let output = result.unwrap();
+        assert!(output.path.exists());
+        assert!(output.path.is_file());
+        let size = output.path.metadata().unwrap().len();
+        assert!(size > 0);
+        assert_eq!(output.format, Format::Mp4);
+        assert_eq!(output.extension, "mp4");
+        assert_eq!(output.path, output_path);
     }
 
     #[test]
