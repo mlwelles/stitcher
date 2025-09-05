@@ -1,7 +1,7 @@
 # Stitcher
 
-A command-line tool for processing and organizing image files based on glob patterns.
-
+A command-line tool for stitching media mirrored by [reflector](https://github.com/adicarlo/reflector) 
+into playable videos.
 
 ## Features (so far)
 
